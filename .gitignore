@@ -1,0 +1,58 @@
+# =========================
+# .NET / C#
+# =========================
+
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.rsuser
+
+# Rider / JetBrains
+.idea/
+*.DotSettings.user
+
+# =========================
+# Tests
+# =========================
+
+**/TestResults/
+**/coverage/
+*.coverage
+*.coveragexml
+
+# =========================
+# Vue / Node.js
+# =========================
+
+**/node_modules/
+**/dist/
+**/.vite/
+
+# =========================
+# Environment / Secrets
+# =========================
+
+**/.env
+**/.env.*
+!**/.env.example
+
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# =========================
+# Logs / Temporary files
+# =========================
+
+*.log
+*.tmp
+
+# =========================
+# Operating system
+# =========================
+
+.DS_Store
+Thumbs.db

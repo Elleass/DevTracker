@@ -1,0 +1,68 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using DevTracker.Infrastructure.Identity;
+using DevTracker.Domain.Entities;
+using Microsoft.VisualBasic;
+using System.Net.NetworkInformation;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
+namespace DevTracker.Infrastructure.Persistence
+{
+
+public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>,Guid>
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    {
+    }
+    public DbSet<Project> Projects => Set<Project>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(AppDbContext).Assembly);
+
+        
+        
+
+
+
+    }
+    
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var projectEntries = ChangeTracker.Entries<Project>();
+            var now = DateTimeOffset.UtcNow;
+            foreach (var entry in projectEntries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = now;
+                    entry.Entity.UpdatedAt = now;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedAt = now;
+                }
+            }
+
+            var taskEntries = ChangeTracker.Entries<TaskItem>();
+            foreach (var entry in taskEntries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = now;
+                    entry.Entity.UpdatedAt = now;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedAt = now;
+                }
+            }
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+}
+}
