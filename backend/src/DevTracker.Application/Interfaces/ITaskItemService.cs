@@ -9,7 +9,7 @@ namespace DevTracker.Application.Inerfaces
             Guid taskItemId, 
             Guid ownerId, 
             CancellationToken cancellationToken);
-        Task<List<TaskItem>> GetTasksItemAsync(
+        Task<List<TaskItem>> GetTaskItemsAsync(
             Guid projectId, 
             Guid ownerId, 
             CancellationToken cancellationToken);
@@ -30,7 +30,7 @@ namespace DevTracker.Application.Inerfaces
             Guid ownerId,
             string? title,
             string? description, 
-            TaskItemStatus status,
+            TaskItemStatus? status,
             CancellationToken cancellationToken);
 
     }

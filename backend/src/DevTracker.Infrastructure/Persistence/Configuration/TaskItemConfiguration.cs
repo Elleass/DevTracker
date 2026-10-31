@@ -17,7 +17,8 @@ namespace DevTracker.Infrastructure.Persistance.Configuration
                 .IsRequired()
                 .HasMaxLength(150);
             builder.Property(t => t.Status)
-                .HasConversion<string>();            
+                .HasConversion<string>();
+            builder.ToTable("TaskItem");            
 
         }
     }

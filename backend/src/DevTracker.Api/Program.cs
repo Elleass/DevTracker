@@ -1,5 +1,6 @@
 using DevTracker.Application.Inerfaces;
 using DevTracker.Application.Services;
+using DevTracker.Domain.Entities;
 using DevTracker.Infrastructure.Identity;
 using DevTracker.Infrastructure.Persistence;
 using DevTracker.Infrastructure.Repositories;
@@ -18,6 +19,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<ITaskItemRepository, TaskItemRepository>();
+builder.Services.AddScoped<ITaskItemService, TaskItemService>();
 
 var app = builder.Build();
 

@@ -16,6 +16,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
     {
     }
     public DbSet<Project> Projects => Set<Project>();
+    public DbSet<TaskItem> TaskItems => Set<TaskItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
