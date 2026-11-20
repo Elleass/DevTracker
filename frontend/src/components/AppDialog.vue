@@ -1,6 +1,6 @@
 <script setup>
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-defineProps({ open: Boolean, title: String, description: { type: String, default: 'Uzupełnij dane i zapisz zmiany.' } })
+defineProps({ open: Boolean, title: String, description: { type: String, default: 'Enter the details and save your changes.' } })
 defineEmits(['update:open'])
 </script>
 <template>

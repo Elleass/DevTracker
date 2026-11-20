@@ -20,12 +20,12 @@ async function save() {
 }
 </script>
 <template>
-  <AppDialog :open="open" :title="project ? 'Edytuj projekt' : 'Nowy projekt'" @update:open="emit('update:open', $event)">
+  <AppDialog :open="open" :title="project ? 'Edit project' : 'New project'" @update:open="emit('update:open', $event)">
     <form @submit.prevent="save" class="form-stack"><ApiFeedback :error="error" />
-      <label for="project-name">Nazwa projektu</label><Input id="project-name" v-model="name" required maxlength="150" />
-      <label for="project-description">Opis projektu</label><Textarea id="project-description" v-model="description" maxlength="4000" />
-      <template v-if="project"><label for="project-status">Status projektu</label><select id="project-status" v-model="status"><option :value="0">Pomysł</option><option :value="1">Aktywny</option><option :value="2">Wstrzymany</option><option :value="3">Ukończony</option></select></template>
-      <Button :disabled="busy" type="submit">{{ busy ? 'Zapisywanie…' : 'Zapisz projekt' }}</Button>
+      <label for="project-name">Project name</label><Input id="project-name" v-model="name" required maxlength="150" />
+      <label for="project-description">Project description</label><Textarea id="project-description" v-model="description" maxlength="4000" />
+      <template v-if="project"><label for="project-status">Project status</label><select id="project-status" v-model="status"><option :value="0">Idea</option><option :value="1">Active</option><option :value="2">On hold</option><option :value="3">Completed</option></select></template>
+      <Button :disabled="busy" type="submit">{{ busy ? 'Saving…' : 'Save project' }}</Button>
     </form>
   </AppDialog>
 </template>

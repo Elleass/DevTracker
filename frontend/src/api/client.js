@@ -1,6 +1,6 @@
 export class ApiError extends Error {
   constructor(status, body, retryAfter) {
-    super(Array.isArray(body) ? body.map(e => e.description).join(' ') : body?.detail || body?.title || `Żądanie nie powiodło się (${status}).`)
+    super(Array.isArray(body) ? body.map(e => e.description).join(' ') : body?.detail || body?.title || `Request failed (${status}).`)
     this.status = status
     this.fields = body?.errors || {}
     this.traceId = body?.traceId

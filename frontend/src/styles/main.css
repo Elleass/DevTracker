@@ -252,7 +252,7 @@ select { border: 1px solid var(--color-border); border-radius: 6px; background: 
 .error-box { background: #402c2c; border: 1px solid var(--color-danger); border-radius: 6px; padding: 14px; margin-block: 12px; overflow-wrap: anywhere; }
 .error-box small { display: block; margin-top: 8px; }
 .error-box ul { padding-left: 16px; list-style: disc; }
-.auth-page { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at top, #23372f, #101112 65%); }
+.auth-page { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: var(--color-background); }
 .auth-card { width: min(100%, 440px); padding: 36px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; }
 .auth-card .form-stack { margin-top: 24px; }
 .table-scroll { overflow-x: auto; }
@@ -271,6 +271,18 @@ table + nav, .table-scroll + nav { margin-top: 20px; }
 .markdown pre { overflow-x: auto; padding: 14px; background: var(--color-background); }
 .candidate-list { max-height: 250px; overflow-y: auto; }
 .candidate-list .toolbar { padding-block: 8px; }
+.status-badge { display: inline-flex; width: fit-content; align-items: center; border: 1px solid var(--color-border); border-radius: 5px; padding: 3px 9px; font-size: 12px; font-weight: 500; white-space: nowrap; color: var(--color-text-secondary); background: var(--color-surface-raised); }
+.status-badge[data-state="idea"] { color: #A9C3D0; border-color: var(--color-session-border); background: var(--color-session); }
+.status-badge[data-state="active"], .status-badge[data-state="completed"] { color: #B6CAA9; border-color: #50614C; background: #29372D; }
+.status-badge[data-state="on-hold"], .status-badge[data-state="high"] { color: var(--color-next-action-heading); border-color: var(--color-next-action-border); background: var(--color-next-action); }
+.status-badge[data-state="archived"], .status-badge[data-state="low"] { color: var(--color-text-muted); background: #242A29; }
+.status-badge[data-state="completed"] { background: var(--color-documentation); border-color: var(--color-documentation-border); }
+.task-table { min-width: 950px; }
+.task-table td { vertical-align: middle; }
+.task-table .task-title { min-width: 240px; width: 44%; }
+.task-table .task-meta { white-space: nowrap; }
+.task-actions { flex-wrap: nowrap; white-space: nowrap; }
+.project-filters { margin-top: 0; }
 @media (max-width: 800px) {
   .app-shell { flex-direction: column; }
   .sidebar { width: 100%; padding: 18px; border-right: 0; }
