@@ -23,6 +23,19 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+builder.Services.AddOptions<LoginProtectionOptions>()
+    .BindConfiguration("Authentication:LoginProtection")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddOptions<IdentityOptions>()
+    .Configure<IOptions<LoginProtectionOptions>>((options, protection) =>
+    {
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = protection.Value.MaxFailedAttempts;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(protection.Value.LockoutMinutes);
+    });
+builder.Services.AddRateLimiter(options =>
+    options.AddPolicy<string, LoginRateLimitPolicy>(LoginProtectionOptions.PolicyName));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<AdminRoleProvisioner>();
 builder.Services.AddOptions<AuthSessionOptions>()
@@ -79,6 +92,7 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 app.UseHttpsRedirection();
 

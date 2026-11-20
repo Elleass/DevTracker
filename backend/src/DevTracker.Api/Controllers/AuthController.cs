@@ -4,6 +4,8 @@ using DevTracker.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using DevTracker.Api.Configuration;
 
 namespace DevTracker.Api.Controllers
 {
@@ -56,9 +58,11 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting(LoginProtectionOptions.PolicyName)]
         [ProducesResponseType(StatusCodes.Status200OK, Description = "Signed in. The response sets the Identity authentication cookie used by protected endpoints.")]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "The request body is invalid.")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized, Description = "Invalid credentials or a temporarily locked account. Five failed passwords lock the account for 15 minutes by default.")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests, "application/problem+json", Description = "IP login request limit exceeded (default: 10 per 60 seconds). Retry-After specifies when to retry.")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
@@ -68,7 +72,7 @@ namespace DevTracker.Api.Controllers
             }
 
            var result = await _signInManager.PasswordSignInAsync(user, request.Password,
-               isPersistent: false, lockoutOnFailure: false);
+               isPersistent: false, lockoutOnFailure: true);
            if (result.Succeeded == false)
             {
                 return Unauthorized();
