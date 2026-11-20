@@ -1,0 +1,60 @@
+import { test, expect } from '@playwright/test'
+const password = 'Browser-Test-42!'
+async function login(page) {
+  const email = `${crypto.randomUUID()}@example.com`
+  const response = await page.request.post('/api/auth/register', { data: { email, nickname: 'Browser tester', password } })
+  expect(response.status()).toBe(201)
+  await page.goto('/login'); await page.getByLabel('E-mail', { exact: true }).fill(email); await page.getByLabel('Hasło', { exact: true }).fill(password)
+  await page.getByRole('button', { name: 'Zaloguj', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Moje projekty', level: 1 })).toBeVisible()
+}
+async function project(page, name) {
+  await page.getByRole('button', { name: 'Nowy projekt', exact: true }).click()
+  await page.getByLabel('Nazwa projektu').fill(name); await page.getByRole('button', { name: 'Zapisz projekt' }).click()
+  await page.getByRole('link', { name: new RegExp(name) }).last().click()
+  await expect(page).toHaveURL(/\/projects\/[0-9a-f-]+$/)
+  await expect(page.getByRole('heading', { name, exact: true, level: 1 })).toBeVisible()
+}
+test('complete project, task, document and work-session workflow', async ({ page }) => {
+  await login(page); await project(page, 'Browser workspace')
+  await page.getByRole('button', { name: 'Dodaj zadanie', exact: true }).click()
+  await page.getByLabel('Tytuł zadania').fill('Browser task'); await page.getByRole('button', { name: 'Zapisz zadanie' }).click()
+  await expect(page.getByText('Browser task', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Archiwizuj', exact: true }).click(); await page.getByRole('button', { name: 'Potwierdź', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('unfinished tasks')
+  await page.getByRole('button', { name: 'Edytuj', exact: true }).click(); await page.getByLabel('Status zadania').selectOption('2'); await page.getByRole('button', { name: 'Zapisz zadanie' }).click()
+  await expect(page.getByRole('cell', { name: 'Zakończone', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Dokumentacja', exact: true }).click(); await page.getByRole('button', { name: 'Nowy dokument', exact: true }).click()
+  await page.getByLabel('Tytuł dokumentu').fill('Browser notes'); await page.getByLabel('Treść Markdown').fill('# Saved safely\n**Notes**<img src=x onerror="window.__xss=true">')
+  await page.getByRole('button', { name: 'Zapisz dokument' }).click(); await expect(page.getByRole('heading', { name: 'Saved safely' })).toBeVisible()
+  expect(await page.evaluate(() => window.__xss)).toBeUndefined()
+  await page.reload(); await page.getByRole('button', { name: 'Dokumentacja', exact: true }).click(); await expect(page.getByRole('button', { name: 'Browser notes', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Sesje pracy', exact: true }).click(); await page.getByRole('button', { name: 'Rozpocznij pracę' }).click()
+  await expect(page.getByRole('button', { name: 'Zakończ pracę' })).toBeVisible(); await page.reload()
+  await expect(page.getByRole('button', { name: 'Zakończ pracę' })).toBeVisible(); await page.getByRole('button', { name: 'Zakończ pracę' }).click()
+  await expect(page.getByRole('button', { name: 'Zakończ pracę' })).not.toBeVisible()
+  await page.getByRole('button', { name: 'Dokumentacja', exact: true }).click()
+  await page.getByRole('button', { name: 'Edytuj dokument', exact: true }).click(); await page.getByLabel('Tytuł dokumentu').fill('Updated notes'); await page.getByRole('button', { name: 'Zapisz dokument' }).click()
+  await expect(page.getByRole('button', { name: 'Updated notes', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Usuń dokument', exact: true }).click(); await page.getByRole('button', { name: 'Potwierdź', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Updated notes', exact: true })).not.toBeVisible()
+  await page.getByRole('button', { name: 'Zadania', exact: true }).click(); await page.getByRole('button', { name: 'Usuń', exact: true }).click(); await page.getByRole('button', { name: 'Potwierdź', exact: true }).click()
+  await expect(page.getByText('Browser task', { exact: true })).not.toBeVisible()
+  await page.getByRole('button', { name: 'Edytuj projekt', exact: true }).click(); await page.getByLabel('Nazwa projektu').fill('Renamed workspace'); await page.getByRole('button', { name: 'Zapisz projekt' }).click()
+  await expect(page.getByRole('heading', { name: 'Renamed workspace', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Usuń projekt', exact: true }).click(); await page.getByRole('button', { name: 'Potwierdź', exact: true }).click()
+  await expect(page).toHaveURL(/\/projects$/)
+  await page.getByRole('button', { name: 'Wyloguj', exact: true }).click(); await expect(page).toHaveURL(/\/login/)
+})
+test('protected deep links require a session and preserve the return route', async ({ page }) => {
+  await page.goto('/sessions'); await expect(page).toHaveURL(/\/login\?redirect=/)
+})
+test('removed authentication cookie returns the user to login', async ({ page, context }) => {
+  await login(page); await context.clearCookies(); await page.goto('/sessions'); await expect(page).toHaveURL(/\/login/)
+})
+test('USER cannot access another user project or ADMIN endpoint', async ({ browser }) => {
+  const one = await browser.newContext(), two = await browser.newContext(); const a = await one.newPage(), b = await two.newPage()
+  await login(a); await project(a, 'Private browser project'); const url = a.url()
+  await login(b); const response = await b.request.get('/api/admin/users'); expect(response.status()).toBe(403)
+  await b.goto(url); await expect(b.getByRole('alert')).toContainText('Nie znaleziono')
+  await one.close(); await two.close()
+})

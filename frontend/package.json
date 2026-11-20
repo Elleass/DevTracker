@@ -6,20 +6,32 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@primeuix/themes": "^2.0.3",
+    "@radix-icons/vue": "^1.0.0",
     "@tailwindcss/vite": "^4.3.3",
-    "primevue": "^4.5.5",
+    "@vueuse/core": "^15.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dompurify": "^3.4.18",
+    "marked": "^18.2.1",
+    "reka-ui": "^2.11.0",
+    "tailwind-merge": "^3.7.1",
     "tailwindcss": "^4.3.3",
     "vue": "^3.5.42",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/test-utils": "^2.4.11",
+    "jsdom": "^31.0.1",
     "vite": "^8.2.2",
-    "vite-plugin-vue-devtools": "^8.2.1"
+    "vite-plugin-vue-devtools": "^8.2.1",
+    "vitest": "^5.1.1"
   },
   "engines": {
     "node": "^22.18.0 || >=24.12.0"
