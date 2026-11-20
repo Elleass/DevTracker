@@ -15,6 +15,11 @@ public sealed class GlobalExceptionHandler(
     {
         var (status, title) = exception switch
         {
+            ActiveWorkSessionException => (409, "You already have an active work session"),
+            ArchivedWorkSessionException => (409, "Cannot start work in an archived project"),
+            WorkSessionNotFoundException => (404, "Work session not found"),
+            DocumentNotFoundException => (404, "Document not found"),
+            TaskDependencyException dependency => (409, dependency.Message),
             ProjectDoNotExistsException =>
                 (StatusCodes.Status404NotFound, "Project not found"),
             TaskDoNotExistsException =>

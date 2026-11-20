@@ -10,10 +10,32 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using DevTracker.Infrastructure.Background;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["CookieAuth"] = new OpenApiSecurityScheme
+        { Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Cookie, Name = "DevTracker.Session" };
+        return Task.CompletedTask;
+    });
+    options.AddOperationTransformer((operation, context, _) =>
+    {
+        if (context.Description.ActionDescriptor.EndpointMetadata.OfType<IAuthorizeData>().Any())
+            operation.Security = [new OpenApiSecurityRequirement { [new OpenApiSecuritySchemeReference("CookieAuth", context.Document)] = [] }];
+        return Task.CompletedTask;
+    });
+});
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+    builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(keysPath)).SetApplicationName("DevTracker");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -68,8 +90,21 @@ builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<ITaskItemRepository, TaskItemRepository>();
 builder.Services.AddScoped<ITaskItemService, TaskItemService>();
 builder.Services.AddScoped<IProjectWriteLock, PostgreSqlProjectWriteLock>();
+builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+builder.Services.AddScoped<WorkspaceService>();
+builder.Services.AddSingleton<WorkSessionQueue>();
+builder.Services.AddSingleton<IWorkSessionEvents>(services => services.GetRequiredService<WorkSessionQueue>());
+if (builder.Configuration.GetValue("BackgroundProcessing:Enabled", true))
+    builder.Services.AddHostedService<WorkStatisticsWorker>();
 
 var app = builder.Build();
+
+if (builder.Configuration.GetValue<bool>("migrate"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+    return;
+}
 
 if (builder.Configuration["grant-admin"] is { Length: > 0 } adminEmail)
 {

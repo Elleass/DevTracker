@@ -81,6 +81,7 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpDelete("{taskItemId:guid}")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "TaskDependencyException: another task requires this predecessor; remove the dependency first.")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException or TaskDoNotExistsException: the project is inaccessible or the task does not exist in this project.")]
         public async Task<IActionResult> DeleteTaskItemAsync(Guid taskItemId, Guid projectId, CancellationToken cancellationToken)
@@ -96,7 +97,7 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPatch("{taskItemId:guid}")]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectArchivedException: cannot update tasks in an archived project.")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectArchivedException or TaskDependencyException: archived project, unfinished predecessors, or reopening a predecessor of a completed task.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "The request body is invalid.")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException or TaskDoNotExistsException: the project is inaccessible or the task does not exist in this project.")]

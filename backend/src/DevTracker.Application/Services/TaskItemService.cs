@@ -16,12 +16,14 @@ namespace DevTracker.Application.Services
 
         private readonly ITaskItemRepository _taskItemRepository;
         private readonly IProjectWriteLock _writeLock;
+        private readonly IWorkspaceRepository _workspace;
 
-        public TaskItemService(IProjectRepository projectRepository, ITaskItemRepository taskItemRepository, IProjectWriteLock writeLock)
+        public TaskItemService(IProjectRepository projectRepository, ITaskItemRepository taskItemRepository, IProjectWriteLock writeLock, IWorkspaceRepository workspace)
         {
             _projectRepository = projectRepository;
             _taskItemRepository = taskItemRepository;
             _writeLock = writeLock;
+            _workspace = workspace;
         }
         public async Task<Guid> AddTaskItemAsync(Guid projectId, Guid ownerId, string title, string? description, DateTimeOffset? dueAt, CancellationToken cancellationToken)
         {
@@ -62,6 +64,8 @@ namespace DevTracker.Application.Services
             {
                 throw new TaskDoNotExistsException();
             }
+            if ((await _workspace.DependenciesAsync(projectId, cancellationToken)).Any(link => link.PredecessorTaskId == taskItemId))
+                throw new TaskDependencyException("Remove dependent task links before deleting this predecessor");
             await _taskItemRepository.DeleteTask(task, cancellationToken);
             await scope.CommitAsync(cancellationToken);
         }
@@ -119,6 +123,9 @@ namespace DevTracker.Application.Services
             }
             if (status is not null)
             {
+                DependencyRules.ValidateStatus(taskItemId, status.Value,
+                    await _taskItemRepository.GetByProjectIdAsync(projectId, cancellationToken),
+                    await _workspace.DependenciesAsync(projectId, cancellationToken));
                 task.Status = status.Value;
             }
             if (dueAtSpecified)

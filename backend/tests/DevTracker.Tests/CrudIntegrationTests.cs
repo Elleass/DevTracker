@@ -210,7 +210,7 @@ public class CrudIntegrationTests(PostgreSqlFixture database) : IClassFixture<Po
         var taskId = await CreateTask(client, projectId, "Cascade task");
         await using var context = database.CreateContext();
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
-        Assert.Equal(4, (await context.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(context.Database.GetMigrations().Count(), (await context.Database.GetAppliedMigrationsAsync()).Count());
         var ownerId = await context.Users.Where(u => u.Email == email).Select(u => u.Id).SingleAsync();
         Assert.Equal(ownerId, (await context.Projects.AsNoTracking().SingleAsync(p => p.Id == projectId)).OwnerId);
         Assert.Equal(projectId, (await context.TaskItems.AsNoTracking().SingleAsync(t => t.Id == taskId)).ProjectId);

@@ -4,6 +4,7 @@ namespace DevTracker.Domain.Entities
     {
         public Guid Id {get; set;}
         public Guid OwnerId {get; set;}
+        public long TotalWorkedSeconds { get; set; }
 
 
 

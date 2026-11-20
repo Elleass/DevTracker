@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace DevTracker.Tests;
 
@@ -27,6 +28,9 @@ public class ApiDocumentationTests
 
         using var document = JsonDocument.Parse(await client.GetStringAsync("/openapi/v1.json"));
         var paths = document.RootElement.GetProperty("paths");
+        Assert.Equal("cookie", document.RootElement.GetProperty("components").GetProperty("securitySchemes").GetProperty("CookieAuth").GetProperty("in").GetString());
+        Assert.True(paths.GetProperty("/api/projects").GetProperty("get").TryGetProperty("security", out _));
+        Assert.False(paths.GetProperty("/api/auth/login").GetProperty("post").TryGetProperty("security", out _));
         var listTasks = paths.GetProperty("/api/projects/{projectId}/tasks").GetProperty("get");
         var parameterNames = listTasks.GetProperty("parameters").EnumerateArray()
             .Select(parameter => parameter.GetProperty("name").GetString()).ToArray();
@@ -81,6 +85,8 @@ public class ApiDocumentationTests
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment(environment);
+            builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
+                new Dictionary<string, string?> { ["BackgroundProcessing:Enabled"] = "false" }));
             builder.ConfigureLogging(logging => logging.ClearProviders());
             builder.ConfigureServices(services =>
                 services.AddDataProtection().UseEphemeralDataProtectionProvider());
