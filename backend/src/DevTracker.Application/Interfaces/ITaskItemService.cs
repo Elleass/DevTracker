@@ -1,4 +1,5 @@
 using DevTracker.Domain.Entities;
+using DevTracker.Application.Models;
 
 namespace DevTracker.Application.Inerfaces
 {
@@ -9,9 +10,10 @@ namespace DevTracker.Application.Inerfaces
             Guid taskItemId, 
             Guid ownerId, 
             CancellationToken cancellationToken);
-        Task<List<TaskItem>> GetTaskItemsAsync(
+        Task<PagedResult<TaskItem>> GetTaskItemsAsync(
             Guid projectId, 
             Guid ownerId, 
+            TaskListQuery query,
             CancellationToken cancellationToken);
         Task<Guid> AddTaskItemAsync(
             Guid projectId,

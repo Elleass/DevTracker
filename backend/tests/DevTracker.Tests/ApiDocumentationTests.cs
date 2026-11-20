@@ -27,6 +27,14 @@ public class ApiDocumentationTests
 
         using var document = JsonDocument.Parse(await client.GetStringAsync("/openapi/v1.json"));
         var paths = document.RootElement.GetProperty("paths");
+        var listTasks = paths.GetProperty("/api/projects/{projectId}/tasks").GetProperty("get");
+        var parameterNames = listTasks.GetProperty("parameters").EnumerateArray()
+            .Select(parameter => parameter.GetProperty("name").GetString()).ToArray();
+        Assert.Contains("pageNumber", parameterNames);
+        Assert.Contains("pageSize", parameterNames);
+        Assert.Contains("status", parameterNames);
+        Assert.Contains("search", parameterNames);
+        Assert.True(listTasks.GetProperty("responses").TryGetProperty("400", out _));
         var create = paths.GetProperty("/api/projects").GetProperty("post").GetProperty("responses");
         Assert.Contains("ProjectAlreadyExistsException",
             create.GetProperty("409").GetProperty("description").GetString());

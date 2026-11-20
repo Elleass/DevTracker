@@ -1,6 +1,7 @@
 using DevTracker.Api.DTOs;
 using DevTracker.Application.Inerfaces;
 using DevTracker.Domain.Entities;
+using DevTracker.Application.Models;
 using DevTracker.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -42,9 +43,12 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(List<GetTaskItemResponse>), StatusCodes.Status200OK)]
+        [EndpointDescription("Lists tasks owned by the current user within the specified project. Defaults: pageNumber=1, pageSize=20; maximum pageSize=100. Optional status (0=ToDo, 1=InProgress, 2=Done) and case-insensitive literal title substring search. Filters are applied before pagination. Ordered by CreatedAt then Id. A page beyond the last returns empty items with the actual filtered totalCount.")]
+        [ProducesResponseType(typeof(PagedResult<GetTaskItemResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "Invalid pagination, status, or search query. pageNumber must be positive; pageSize must be 1–100; search must have at most 150 characters.")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException: the project does not exist or belongs to another user.")]
-        public async Task<IActionResult> GetTasksItemAsync(Guid projectId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetTasksItemAsync(Guid projectId, [FromQuery] TaskListRequest request,
+            CancellationToken cancellationToken)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -52,8 +56,12 @@ namespace DevTracker.Api.Controllers
                 return Unauthorized();
             }
 
-            var tasks = await _taskService.GetTaskItemsAsync(projectId, user.Id, cancellationToken);
-            return Ok(tasks.Select(GetTaskItemResponse.FromEntity).ToList());
+            var page = await _taskService.GetTaskItemsAsync(projectId, user.Id,
+                new TaskListQuery(request.PageNumber, request.PageSize, request.Status, request.Search), cancellationToken);
+
+            return Ok(new PagedResult<GetTaskItemResponse>(
+                page.Items.Select(GetTaskItemResponse.FromEntity).ToList(),
+                page.TotalCount, page.PageNumber, page.PageSize));
         }
 
         [HttpGet("{taskItemId:guid}")]

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using DevTracker.Application.Exceptions;
 using DevTracker.Application.Inerfaces;
 using DevTracker.Domain.Entities;
+using DevTracker.Application.Models;
 
 namespace DevTracker.Application.Services
 {
@@ -70,7 +71,8 @@ namespace DevTracker.Application.Services
                 ?? throw new TaskDoNotExistsException();
         }
 
-        public async Task<List<TaskItem>> GetTaskItemsAsync(Guid projectId, Guid ownerId, CancellationToken cancellationToken)
+        public async Task<PagedResult<TaskItem>> GetTaskItemsAsync(Guid projectId, Guid ownerId,
+            TaskListQuery query, CancellationToken cancellationToken)
         {
             var project = await _projectRepository.GetByIdAsync(projectId, ownerId, cancellationToken );
             if (project == null)
@@ -78,7 +80,7 @@ namespace DevTracker.Application.Services
                 throw new ProjectDoNotExistsException();
             }
 
-            var tasksItem = await _taskItemRepository.GetByProjectIdAsync(projectId, cancellationToken);
+            var tasksItem = await _taskItemRepository.GetPageByProjectIdAsync(projectId, query, cancellationToken);
             return tasksItem;
 
         }

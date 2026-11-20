@@ -86,7 +86,7 @@ public class CrudIntegrationTests(PostgreSqlFixture database) : IClassFixture<Po
         Assert.Equal(0, task.GetProperty("status").GetInt32());
         Assert.Equal(due.ToUniversalTime(), task.GetProperty("dueAt").GetDateTimeOffset());
         var list = await ReadJson(await client.GetAsync(taskRoot), HttpStatusCode.OK);
-        Assert.Single(list.EnumerateArray());
+        Assert.Single(list.GetProperty("items").EnumerateArray());
 
         using var statusUpdate = await client.PatchAsJsonAsync(path, new { status = 2 });
         Assert.Equal(HttpStatusCode.OK, statusUpdate.StatusCode);
@@ -114,7 +114,7 @@ public class CrudIntegrationTests(PostgreSqlFixture database) : IClassFixture<Po
         await AssertProblem(await client.GetAsync(path), HttpStatusCode.NotFound);
         await AssertProblem(await client.PatchAsJsonAsync(path, new { title = "Missing" }), HttpStatusCode.NotFound);
         await AssertProblem(await client.DeleteAsync(path), HttpStatusCode.NotFound);
-        Assert.Empty((await ReadJson(await client.GetAsync(taskRoot), HttpStatusCode.OK)).EnumerateArray());
+        Assert.Empty((await ReadJson(await client.GetAsync(taskRoot), HttpStatusCode.OK)).GetProperty("items").EnumerateArray());
     }
 
     [PostgreSqlFact]
@@ -147,7 +147,7 @@ public class CrudIntegrationTests(PostgreSqlFixture database) : IClassFixture<Po
         Assert.Equal("Unchanged", project.GetProperty("name").GetString());
         Assert.Equal(0, project.GetProperty("status").GetInt32());
         var tasks = await ReadJson(await client.GetAsync(taskRoot), HttpStatusCode.OK);
-        Assert.Equal("Unchanged task", Assert.Single(tasks.EnumerateArray()).GetProperty("title").GetString());
+        Assert.Equal("Unchanged task", Assert.Single(tasks.GetProperty("items").EnumerateArray()).GetProperty("title").GetString());
         Assert.Single((await ReadJson(await client.GetAsync("/api/projects"), HttpStatusCode.OK)).GetProperty("projects").EnumerateArray());
     }
 
