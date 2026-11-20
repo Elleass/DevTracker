@@ -21,6 +21,21 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<IdentityRole<Guid>>().HasData(
+            new IdentityRole<Guid>
+            {
+                Id = ApplicationRoles.UserRoleId,
+                Name = ApplicationRoles.User,
+                NormalizedName = ApplicationRoles.User,
+                ConcurrencyStamp = "devtracker-user-role-v1"
+            },
+            new IdentityRole<Guid>
+            {
+                Id = ApplicationRoles.AdminRoleId,
+                Name = ApplicationRoles.Admin,
+                NormalizedName = ApplicationRoles.Admin,
+                ConcurrencyStamp = "devtracker-admin-role-v1"
+            });
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(AppDbContext).Assembly);
 

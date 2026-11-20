@@ -54,7 +54,8 @@ namespace DevTracker.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId", "Name").IsUnique();
+                    b.HasIndex("OwnerId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Projects");
                 });
@@ -93,7 +94,7 @@ namespace DevTracker.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("TaskItem");
+                    b.ToTable("TaskItem", (string)null);
                 });
 
             modelBuilder.Entity("DevTracker.Infrastructure.Identity.ApplicationUser", b =>
@@ -190,6 +191,22 @@ namespace DevTracker.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("d11f9eb6-0e68-40b5-bb49-d40fda7c7311"),
+                            ConcurrencyStamp = "devtracker-user-role-v1",
+                            Name = "USER",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = new Guid("c4b56538-9dc8-4e95-a9f0-e853ca5bd574"),
+                            ConcurrencyStamp = "devtracker-admin-role-v1",
+                            Name = "ADMIN",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
