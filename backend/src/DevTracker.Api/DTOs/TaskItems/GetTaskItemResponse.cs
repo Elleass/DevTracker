@@ -12,6 +12,8 @@ namespace DevTracker.Api.DTOs
         public Guid ProjectId {get; set;}        
         public TaskItemStatus Status {get; set;}
         public DateTimeOffset? DueAt {get; set;}
+        public int? EstimatedMinutes { get; set; }
+        public TaskPriority Priority { get; set; }
 
         public static GetTaskItemResponse FromEntity(TaskItem task) => new()
         {
@@ -22,7 +24,9 @@ namespace DevTracker.Api.DTOs
             Status = task.Status,
             CreatedAt = task.CreatedAt,
             UpdatedAt = task.UpdatedAt,
-            DueAt = task.DueAt
+            DueAt = task.DueAt,
+            EstimatedMinutes = task.EstimatedMinutes,
+            Priority = task.Priority
         };
     }
 }

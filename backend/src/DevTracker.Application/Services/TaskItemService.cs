@@ -25,7 +25,7 @@ namespace DevTracker.Application.Services
             _writeLock = writeLock;
             _workspace = workspace;
         }
-        public async Task<Guid> AddTaskItemAsync(Guid projectId, Guid ownerId, string title, string? description, DateTimeOffset? dueAt, CancellationToken cancellationToken)
+        public async Task<Guid> AddTaskItemAsync(Guid projectId, Guid ownerId, string title, string? description, DateTimeOffset? dueAt, CancellationToken cancellationToken, int? estimatedMinutes = null, TaskPriority priority = TaskPriority.Normal)
         {
             await using var scope = await _writeLock.AcquireAsync(projectId, ownerId, cancellationToken);
             var project = await _projectRepository.GetByIdAsync(projectId, ownerId, cancellationToken);
@@ -40,7 +40,9 @@ namespace DevTracker.Application.Services
                 Title = title,
                 Description = description,
                 ProjectId = projectId,
-                DueAt = dueAt?.ToUniversalTime()
+                DueAt = dueAt?.ToUniversalTime(),
+                EstimatedMinutes = estimatedMinutes,
+                Priority = priority
                 
             };
             await _taskItemRepository.AddAsync(taskItem, cancellationToken );
@@ -99,7 +101,7 @@ namespace DevTracker.Application.Services
         public async Task UpdateTaskItemAsync(Guid projectId, Guid taskItemId, Guid ownerId,
             string? title, string? description, TaskItemStatus? status,
             bool descriptionSpecified, DateTimeOffset? dueAt, bool dueAtSpecified,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken, int? estimatedMinutes = null, bool estimatedMinutesSpecified = false, TaskPriority? priority = null)
         {
             await using var scope = await _writeLock.AcquireAsync(projectId, ownerId, cancellationToken);
             var project = await _projectRepository.GetByIdAsync(projectId, ownerId, cancellationToken);
@@ -132,6 +134,8 @@ namespace DevTracker.Application.Services
             {
                 task.DueAt = dueAt?.ToUniversalTime();
             }
+            if (estimatedMinutesSpecified) task.EstimatedMinutes = estimatedMinutes;
+            if (priority is not null) task.Priority = priority.Value;
     
             await _taskItemRepository.UpdateTask(cancellationToken);
             await scope.CommitAsync(cancellationToken);

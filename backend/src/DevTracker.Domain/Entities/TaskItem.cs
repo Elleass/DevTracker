@@ -10,6 +10,8 @@ namespace DevTracker.Domain.Entities
         public DateTimeOffset CreatedAt{get;set;}
         public DateTimeOffset UpdatedAt {get; set;}
         public DateTimeOffset? DueAt {get; set;}
+        public int? EstimatedMinutes { get; set; }
+        public TaskPriority Priority { get; set; } = TaskPriority.Normal;
     
     }
 
@@ -19,6 +21,8 @@ namespace DevTracker.Domain.Entities
         InProgress,
         Done
     }
+
+    public enum TaskPriority { Low, Normal, High }
 
 
 }

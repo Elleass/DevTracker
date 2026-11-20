@@ -18,7 +18,12 @@ namespace DevTracker.Infrastructure.Persistance.Configuration
                 .HasMaxLength(150);
             builder.Property(t => t.Status)
                 .HasConversion<string>();
-            builder.ToTable("TaskItem");            
+            builder.Property(t => t.Priority).HasDefaultValue(TaskPriority.Normal).HasSentinel(TaskPriority.Normal);
+            builder.ToTable("TaskItem", table =>
+            {
+                table.HasCheckConstraint("CK_Task_Estimate", "\"EstimatedMinutes\" IS NULL OR \"EstimatedMinutes\" BETWEEN 1 AND 525600");
+                table.HasCheckConstraint("CK_Task_Priority", "\"Priority\" BETWEEN 0 AND 2");
+            });
 
         }
     }

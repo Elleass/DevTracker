@@ -21,7 +21,7 @@ namespace DevTracker.Application.Inerfaces
             string title,
             string? description,
             DateTimeOffset? dueAt,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken, int? estimatedMinutes = null, TaskPriority priority = TaskPriority.Normal);
         Task DeleteTaskItemAsync(
             Guid projectId,
             Guid taskItemId, 
@@ -37,7 +37,7 @@ namespace DevTracker.Application.Inerfaces
             bool descriptionSpecified,
             DateTimeOffset? dueAt,
             bool dueAtSpecified,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken, int? estimatedMinutes = null, bool estimatedMinutesSpecified = false, TaskPriority? priority = null);
 
     }
 }

@@ -133,6 +133,14 @@ namespace DevTracker.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("DueAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("EstimatedMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Priority")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid");
 
@@ -152,7 +160,12 @@ namespace DevTracker.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("TaskItem", (string)null);
+                    b.ToTable("TaskItem", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Task_Estimate", "\"EstimatedMinutes\" IS NULL OR \"EstimatedMinutes\" BETWEEN 1 AND 525600");
+
+                            t.HasCheckConstraint("CK_Task_Priority", "\"Priority\" BETWEEN 0 AND 2");
+                        });
                 });
 
             modelBuilder.Entity("DevTracker.Domain.Entities.WorkSession", b =>

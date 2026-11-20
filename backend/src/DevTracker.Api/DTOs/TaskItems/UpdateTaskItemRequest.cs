@@ -35,6 +35,18 @@ namespace DevTracker.Api.DTOs
         [JsonIgnore]
         public bool DueAtSpecified { get; private set; }
 
+        private int? _estimatedMinutes;
+        [Range(1, 525600)]
+        public int? EstimatedMinutes
+        {
+            get => _estimatedMinutes;
+            set { _estimatedMinutes = value; EstimatedMinutesSpecified = true; }
+        }
+        [JsonIgnore]
+        public bool EstimatedMinutesSpecified { get; private set; }
+        [EnumDataType(typeof(TaskPriority))]
+        public TaskPriority? Priority { get; set; }
+
 
     }
 }

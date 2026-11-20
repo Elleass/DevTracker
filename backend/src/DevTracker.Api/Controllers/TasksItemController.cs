@@ -26,6 +26,7 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPost]
+        [EndpointDescription("Creates a ToDo task. Optional estimatedMinutes: 1–525600; priority: 0=Low, 1=Normal (default), 2=High. DueAt is retained for compatibility; the UI uses estimates instead of deadlines.")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectArchivedException: cannot create tasks in an archived project.")]
         [ProducesResponseType(typeof(CreatedTaskItemResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "Invalid request body or empty task title.")]
@@ -38,7 +39,7 @@ namespace DevTracker.Api.Controllers
                 return Unauthorized();
             }
             Guid taskId = await _taskService.AddTaskItemAsync(projectId, user.Id,
-                request.Title, request.Description, request.DueAt, cancellationToken);
+                request.Title, request.Description, request.DueAt, cancellationToken, request.EstimatedMinutes, request.Priority);
             return CreatedAtAction(nameof(GetTaskItem), new { projectId, taskItemId = taskId },
                 new CreatedTaskItemResponse(taskId));
         }
@@ -97,6 +98,7 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPatch("{taskItemId:guid}")]
+        [EndpointDescription("Updates specified fields only. estimatedMinutes: 1–525600, null clears the estimate; priority: 0=Low, 1=Normal, 2=High. Omitted fields retain their current values.")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectArchivedException or TaskDependencyException: archived project, unfinished predecessors, or reopening a predecessor of a completed task.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "The request body is invalid.")]
@@ -110,7 +112,7 @@ namespace DevTracker.Api.Controllers
             }
             await _taskService.UpdateTaskItemAsync(projectId, taskItemId, user.Id,
                 request.Title, request.Description, request.Status, request.DescriptionSpecified,
-                request.DueAt, request.DueAtSpecified, cancellationToken);
+                request.DueAt, request.DueAtSpecified, cancellationToken, request.EstimatedMinutes, request.EstimatedMinutesSpecified, request.Priority);
             return Ok();
 
         }
