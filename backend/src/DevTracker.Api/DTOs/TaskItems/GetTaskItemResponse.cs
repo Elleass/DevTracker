@@ -11,6 +11,18 @@ namespace DevTracker.Api.DTOs
         public Guid Id {get; set;}
         public Guid ProjectId {get; set;}        
         public TaskItemStatus Status {get; set;}
-        public DateTimeOffset DueAt {get; set;}
+        public DateTimeOffset? DueAt {get; set;}
+
+        public static GetTaskItemResponse FromEntity(TaskItem task) => new()
+        {
+            Id = task.Id,
+            ProjectId = task.ProjectId,
+            Title = task.Title,
+            Description = task.Description,
+            Status = task.Status,
+            CreatedAt = task.CreatedAt,
+            UpdatedAt = task.UpdatedAt,
+            DueAt = task.DueAt
+        };
     }
 }

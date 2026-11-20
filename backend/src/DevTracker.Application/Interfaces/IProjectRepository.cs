@@ -7,7 +7,8 @@ namespace DevTracker.Application.Inerfaces
         Task<bool> ExistsByNameAsync(
             Guid ownerId,
             string name,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken,
+            Guid? excludedProjectId = null);
         Task AddAsync(
             Project project,
             CancellationToken cancellationToken);

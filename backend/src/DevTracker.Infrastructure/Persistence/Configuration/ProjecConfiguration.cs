@@ -10,6 +10,7 @@ namespace DevTracker.Infrastructure.Persistance.Configuration
         public void Configure(EntityTypeBuilder<Project> builder) 
         {
             builder.HasKey(p => p.Id);
+            builder.HasIndex(p => new { p.OwnerId, p.Name }).IsUnique();
             builder.HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(p => p.OwnerId)

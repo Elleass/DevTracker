@@ -33,12 +33,14 @@ namespace DevTracker.Infrastructure.Repositories
 
         public async Task<List<TaskItem>> GetByProjectIdAsync(Guid projectId, CancellationToken cancellationToken)
         {
-            return await _context.TaskItems.Where(t => t.ProjectId == projectId).ToListAsync(cancellationToken);
+            return await _context.TaskItems.AsNoTracking().Where(t => t.ProjectId == projectId)
+                .OrderBy(t => t.CreatedAt).ThenBy(t => t.Id).ToListAsync(cancellationToken);
         }
 
         public async Task UpdateTask(CancellationToken cancellationToken)
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+
     }
 }

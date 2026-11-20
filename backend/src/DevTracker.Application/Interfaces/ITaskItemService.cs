@@ -18,6 +18,7 @@ namespace DevTracker.Application.Inerfaces
             Guid ownerId,
             string title,
             string? description,
+            DateTimeOffset? dueAt,
             CancellationToken cancellationToken);
         Task DeleteTaskItemAsync(
             Guid projectId,
@@ -31,6 +32,9 @@ namespace DevTracker.Application.Inerfaces
             string? title,
             string? description, 
             TaskItemStatus? status,
+            bool descriptionSpecified,
+            DateTimeOffset? dueAt,
+            bool dueAtSpecified,
             CancellationToken cancellationToken);
 
     }

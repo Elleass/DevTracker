@@ -11,6 +11,8 @@ namespace DevTracker.Api.Controllers
     [ApiController]
     [Authorize]
     [Route("api/projects")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Description = "Authentication cookie is missing, invalid, or the user no longer exists.")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError, "application/problem+json", Description = "Unexpected server exception. Details are logged with traceId.")]
     public class ProjectsController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -23,6 +25,9 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(CreatedProjectResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "The request body is invalid.")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectAlreadyExistsException: this user already has a project with the given name.")]
         public async Task<IActionResult> Create(CreateProjectRequest request, CancellationToken cancellationToken)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -36,12 +41,12 @@ namespace DevTracker.Api.Controllers
                 request.Description,
                 cancellationToken);
 
-            return StatusCode(StatusCodes.Status201Created, new {projectId});
+            return CreatedAtAction(nameof(GetProjectById), new { projectId }, new CreatedProjectResponse(projectId));
 
         }
 
-
         [HttpGet]
+        [ProducesResponseType(typeof(ProjectListResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllProjects(CancellationToken cancellationToken)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -50,14 +55,12 @@ namespace DevTracker.Api.Controllers
                 return Unauthorized();
             }
             List<Project> projects = await _projectService.GetProjectsAsync(user.Id, cancellationToken);
-            return StatusCode(StatusCodes.Status200OK, new
-            {
-                projects
-            });
+            return Ok(new ProjectListResponse(projects));
         }
 
-
         [HttpGet("{projectId:guid}")]
+        [ProducesResponseType(typeof(ProjectDetailsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException: the project does not exist or belongs to another user.")]
         public async Task<IActionResult> GetProjectById(Guid projectId, CancellationToken cancellationToken)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -66,13 +69,12 @@ namespace DevTracker.Api.Controllers
                 return Unauthorized();
             }
             Project project = await  _projectService.GetProjectAsync(projectId, user.Id, cancellationToken);
-            return StatusCode(StatusCodes.Status200OK, new
-            {
-                project
-            });
+            return Ok(new ProjectDetailsResponse(project));
         }
 
         [HttpDelete("{projectId:guid}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException: the project does not exist or belongs to another user.")]
         public async Task<IActionResult> DeleteProject(Guid projectId, CancellationToken cancellationToken)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -85,6 +87,10 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPatch("{projectId:guid}")]
+        [ProducesResponseType(typeof(UpdatedProjectResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectAlreadyExistsException: this user already has another project with the given name.")]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "The request body is invalid.")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException: the project does not exist or belongs to another user.")]
         public async Task<IActionResult> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request, CancellationToken cancellationToken)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -92,19 +98,18 @@ namespace DevTracker.Api.Controllers
             {
                 return Unauthorized();
             }
-             await _projectService.UpdateProjectAsync(
+            var project = await _projectService.UpdateProjectAsync(
                 projectId,
                 user.Id,
                 request.Name,
                 request.Description,
+                request.DescriptionSpecified,
+                request.ProjectStatus,
                 cancellationToken);
 
-            return Ok(new {projectId, request.Name, request.Description});
+            return Ok(new UpdatedProjectResponse(project.Id, project.Name, project.Description, project.Status));
 
         }
-
-
-
 
     }
 }

@@ -58,12 +58,13 @@ namespace DevTracker.Application.Services
             await _projectRepository.DeleteAsync(project, cancellationToken);
         }
 
-
-        public async Task UpdateProjectAsync(
+        public async Task<Project> UpdateProjectAsync(
             Guid projectId,
             Guid ownerId,
             string? name,
             string? description,
+            bool descriptionSpecified,
+            ProjectStatus? status,
             CancellationToken cancellationToken)
         {
             var project = await _projectRepository.GetByIdAsync(projectId, ownerId, cancellationToken);
@@ -73,13 +74,22 @@ namespace DevTracker.Application.Services
             }
             if (name is not null)
             {
+                if (await _projectRepository.ExistsByNameAsync(ownerId, name, cancellationToken, projectId))
+                {
+                    throw new ProjectAlreadyExistsException();
+                }
                 project.Name = name;
             }
-            if (description is not null)
+            if (descriptionSpecified)
             {
                 project.Description = description;
             }
+            if (status is not null)
+            {
+                project.Status = status.Value;
+            }
             await _projectRepository.UpdateProject(cancellationToken);
+            return project;
         }
     }
 }
