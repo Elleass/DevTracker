@@ -9,12 +9,12 @@ pozostałe plany zachowują historyczny stan wyjściowy.
 | 20. Trzy reguły | Jedna aktywna sesja użytkownika; zakaz archiwizacji z niezakończonymi zadaniami; ukończenie zadania wymaga ukończenia poprzedników. Warstwa aplikacyjna i ochrona współbieżności. |
 | 21. Work Sessions | Start, idempotentny stop, aktywna sesja i stronicowana historia. Częściowy indeks UNIQUE chroni równoległy start w różnych projektach. |
 | 22. Projects w Vue | Lista, tworzenie, szczegóły, edycja, archiwizacja i usuwanie. Odświeżana nawigacja i potwierdzenia operacji. |
-| 23. Tasks w Vue | CRUD, status, termin, filtry, wyszukiwanie, paginacja i poprzednicy. Błędy 409 prezentują przyczynę odrzucenia. |
+| 23. Tasks w Vue | CRUD, status, estymacja, priorytet, filtry, wyszukiwanie, paginacja i poprzednicy. Błędy 409 prezentują przyczynę odrzucenia. |
 | 24. Documentation | REST i Vue CRUD dokumentów projektu; Markdown z sanitizowanym podglądem. Potwierdzenie opuszczenia niezapisanej edycji. |
 | 25. Błędy API | Wspólny klient: ValidationProblemDetails, ProblemDetails, IdentityError, 401/403/404/409/429 i błędy sieci. Przekierowanie po utracie sesji, trasa powrotna, zachowanie danych formularza. |
 | 26. Sesje w Vue | Start w projekcie, globalny licznik i stop, historia globalna i projektowa. Stan odtwarzany z API po odświeżeniu strony. |
 | 27. Mechanizm asynchroniczny | WorkSessionCompleted → ograniczony Channel → BackgroundService → Project.TotalWorkedSeconds. Utrwalone sesje są źródłem prawdy; restart i okresowe uzgadnianie odzyskują utracone sygnały. |
-| 28. Testy | 69 .NET, 6 Vitest, 4 Playwright. PostgreSQL: równoległe starty, reguły zależności, izolacja, dokumenty, duplikaty zdarzeń, restart projekcji, awaria i odzyskanie przetwarzania. |
+| 28. Testy | 70 .NET, 6 Vitest, 6 Playwright. PostgreSQL: równoległe starty, reguły zależności, izolacja, dokumenty, metadane zadań, duplikaty zdarzeń, restart projekcji, awaria i odzyskanie przetwarzania. |
 | 29. GitHub Actions | `.github/workflows/ci.yml`: build/test backendu z PostgreSQL 18, testy/build Vue i E2E Chromium przy push/PR. Raporty jako artefakty. |
 | 30. Docker Compose | PostgreSQL, jednorazowy migrator, ASP.NET Core i nginx/Vue. Trwałe wolumeny bazy i kluczy cookies; oczekiwanie na bazę i migracje. |
 | 31. README | [README](../README.md): stos, funkcje, Docker, lokalny start, zmienne, migracje, ADMIN i testy. |
@@ -23,12 +23,13 @@ pozostałe plany zachowują historyczny stan wyjściowy.
 ## Weryfikacja lokalna
 
 - `dotnet test backend/DevTracker.slnx --no-restore` z PostgreSQL:
-  **69 zaliczonych, 0 błędów, 0 pominiętych**.
+  **70 zaliczonych, 0 błędów, 0 pominiętych**.
 - `npm test`: **6 zaliczonych**; `npm run build`: sukces.
-- `npm run test:e2e` z odrębną bazą: **4 zaliczone**. Pełna ścieżka obejmuje
+- `npm run test:e2e` z odrębną bazą: **6 zaliczonych**. Pełna ścieżka obejmuje
   logowanie, projekty, zadania, odrzuconą archiwizację, dokumenty (także XSS),
   sesję z odświeżeniem strony, edycję/usuwanie i logout. Osobne scenariusze:
   deep link, utrata cookie, USER bez dostępu do cudzych danych i ADMIN.
+  Dodatkowo błędne logowanie bez identyfikatora oraz filtry statusów projektów.
 - `docker compose up -d --build`: migracje zastosowane, API i frontend działają.
   nginx obsługuje SPA i `/api`; niezalogowane `/api/auth/me` daje 401.
 - `npm audit --omit=dev`: 0 podatności zależności produkcyjnych.

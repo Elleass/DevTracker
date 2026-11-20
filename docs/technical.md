@@ -121,7 +121,11 @@ Logowanie przez UI ustawia HttpOnly cookie; Swagger nie musi odczytywać go w JS
 
 Wszystkie ścieżki zaczynają się od `/api`. Nowe odpowiedzi dokumentów/sesji
 mają dedykowane rekordy DTO. Dokument PUT zastępuje Title/ContentMarkdown;
-Tasks/Projects PATCH zachowuje pola pominięte i czyści opis/termin przy null.
+Tasks/Projects PATCH zachowuje pola pominięte i czyści opis/estymację przy null.
+Tasks mają opcjonalne estimatedMinutes (1–525600) oraz priority: 0=Low,
+1=Normal (domyślnie), 2=High. UI używa estymacji zamiast terminów; stare DueAt
+pozostają w bazie i API dla zgodności i zachowania danych. Migracja AddTaskPlanning
+wyłącznie dodaje kolumny i ograniczenia. Interfejs aplikacji jest po angielsku.
 Dodanie istniejącej zależności i ponowne usunięcie jej są idempotentne (204).
 
 Tasks: pageNumber=1/pageSize=20 (maks. 100), status=0/1/2, search po tytule ILIKE

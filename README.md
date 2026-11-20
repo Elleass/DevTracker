@@ -7,7 +7,8 @@ ASP.NET Core przez cookies Identity. Dane są przechowywane w PostgreSQL.
 ## Funkcje
 
 - Rejestracja, logowanie, logout, sesje 30 minut, role USER/ADMIN.
-- Projects CRUD i archiwizacja; Tasks CRUD, terminy, paginacja i filtry.
+- Projects CRUD i archiwizacja; Tasks CRUD, estymacja czasu, priorytet, paginacja i filtry.
+- Interfejs w języku angielskim, filtrowanie projektów po statusie i nazwie.
 - Graf poprzedników: zakaz cykli i zakończenia zadania przed poprzednikami.
 - Dokumenty projektu: CRUD, Markdown z podglądem sanitizowanym przez DOMPurify.
 - Jedna aktywna sesja pracy na użytkownika; start/stop/historia i timer w UI.
