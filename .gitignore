@@ -23,6 +23,8 @@
 **/coverage/
 *.coverage
 *.coveragexml
+**/test-results/
+**/playwright-report/
 
 # =========================
 # Vue / Node.js
