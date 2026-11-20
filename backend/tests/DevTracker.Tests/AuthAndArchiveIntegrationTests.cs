@@ -13,6 +13,43 @@ namespace DevTracker.Tests;
 public class AuthAndArchiveIntegrationTests(PostgreSqlFixture database) : IClassFixture<PostgreSqlFixture>
 {
     [PostgreSqlFact]
+    public async Task Archive_rejects_unfinished_tasks_and_persists_success_when_all_done()
+    {
+        using var factory = database.CreateFactory();
+        using var owner = factory.CreateClient();
+        using var other = factory.CreateClient();
+        using var anonymous = factory.CreateClient();
+        await RegisterAndLogin(owner);
+        await RegisterAndLogin(other);
+        var projectId = await CreateProject(owner, "Archive test");
+        var taskId = await CreateTask(owner, projectId, "Finish me");
+        var archivePath = $"/api/projects/{projectId}/archive";
+
+        using var notSignedIn = await anonymous.PostAsync(archivePath, null);
+        Assert.Equal(HttpStatusCode.Unauthorized, notSignedIn.StatusCode);
+        await AssertProblem(await other.PostAsync(archivePath, null), HttpStatusCode.NotFound);
+        await AssertProblem(await owner.PostAsync($"/api/projects/{Guid.NewGuid()}/archive", null), HttpStatusCode.NotFound);
+        await AssertProblem(await owner.PostAsync(archivePath, null), HttpStatusCode.Conflict);
+        var project = (await ReadJson(await owner.GetAsync($"/api/projects/{projectId}"), HttpStatusCode.OK)).GetProperty("project");
+        Assert.Equal(JsonValueKind.Null, project.GetProperty("archivedAt").ValueKind);
+
+        using var completed = await owner.PatchAsJsonAsync($"/api/projects/{projectId}/tasks/{taskId}", new { status = 2 });
+        Assert.Equal(HttpStatusCode.OK, completed.StatusCode);
+        using var archived = await owner.PostAsync(archivePath, null);
+        Assert.Equal(HttpStatusCode.NoContent, archived.StatusCode);
+        project = (await ReadJson(await owner.GetAsync($"/api/projects/{projectId}"), HttpStatusCode.OK)).GetProperty("project");
+        var archivedAt = project.GetProperty("archivedAt").GetDateTimeOffset();
+        using var repeated = await owner.PostAsync(archivePath, null);
+        Assert.Equal(HttpStatusCode.NoContent, repeated.StatusCode);
+        project = (await ReadJson(await owner.GetAsync($"/api/projects/{projectId}"), HttpStatusCode.OK)).GetProperty("project");
+        Assert.Equal(archivedAt, project.GetProperty("archivedAt").GetDateTimeOffset());
+
+        var empty = await CreateProject(owner, "Archive empty");
+        using var emptyArchived = await owner.PostAsync($"/api/projects/{empty}/archive", null);
+        Assert.Equal(HttpStatusCode.NoContent, emptyArchived.StatusCode);
+    }
+
+    [PostgreSqlFact]
     public async Task Session_is_valid_before_expiration_and_rejected_after_30_minutes()
     {
         var clock = new ManualTimeProvider();

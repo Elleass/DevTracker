@@ -15,19 +15,23 @@ namespace DevTracker.Application.Services
 
 
         private readonly ITaskItemRepository _taskItemRepository;
+        private readonly IProjectWriteLock _writeLock;
 
-        public TaskItemService(IProjectRepository projectRepository, ITaskItemRepository taskItemRepository)
+        public TaskItemService(IProjectRepository projectRepository, ITaskItemRepository taskItemRepository, IProjectWriteLock writeLock)
         {
             _projectRepository = projectRepository;
             _taskItemRepository = taskItemRepository;
+            _writeLock = writeLock;
         }
         public async Task<Guid> AddTaskItemAsync(Guid projectId, Guid ownerId, string title, string? description, DateTimeOffset? dueAt, CancellationToken cancellationToken)
         {
+            await using var scope = await _writeLock.AcquireAsync(projectId, ownerId, cancellationToken);
             var project = await _projectRepository.GetByIdAsync(projectId, ownerId, cancellationToken);
             if (project == null)
             {
                  throw new ProjectDoNotExistsException();
             }
+            if (project.ArchivedAt is not null) throw new ProjectArchivedException();
 
             TaskItem taskItem = new TaskItem
             {
@@ -38,6 +42,7 @@ namespace DevTracker.Application.Services
                 
             };
             await _taskItemRepository.AddAsync(taskItem, cancellationToken );
+            await scope.CommitAsync(cancellationToken);
 
             return(taskItem.Id);
 
@@ -45,6 +50,7 @@ namespace DevTracker.Application.Services
 
         public async Task DeleteTaskItemAsync(Guid projectId, Guid taskItemId, Guid ownerId, CancellationToken cancellationToken)
         {
+            await using var scope = await _writeLock.AcquireAsync(projectId, ownerId, cancellationToken);
             var project = await _projectRepository.GetByIdAsync(projectId, ownerId, cancellationToken );
             if (project == null)
             {
@@ -57,6 +63,7 @@ namespace DevTracker.Application.Services
                 throw new TaskDoNotExistsException();
             }
             await _taskItemRepository.DeleteTask(task, cancellationToken);
+            await scope.CommitAsync(cancellationToken);
         }
 
         public async Task<TaskItem> GetTaskItemAsync(Guid projectId, Guid taskItemId, Guid ownerId, CancellationToken cancellationToken)
@@ -90,11 +97,13 @@ namespace DevTracker.Application.Services
             bool descriptionSpecified, DateTimeOffset? dueAt, bool dueAtSpecified,
             CancellationToken cancellationToken)
         {
+            await using var scope = await _writeLock.AcquireAsync(projectId, ownerId, cancellationToken);
             var project = await _projectRepository.GetByIdAsync(projectId, ownerId, cancellationToken);
             if (project == null)
             {
                 throw new ProjectDoNotExistsException();
             }
+            if (project.ArchivedAt is not null) throw new ProjectArchivedException();
             var task = await _taskItemRepository.GetByIdAsync(taskItemId, projectId, cancellationToken);
             if (task == null)
             {
@@ -118,6 +127,7 @@ namespace DevTracker.Application.Services
             }
     
             await _taskItemRepository.UpdateTask(cancellationToken);
+            await scope.CommitAsync(cancellationToken);
         }
     }
 }

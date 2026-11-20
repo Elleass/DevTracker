@@ -86,6 +86,19 @@ namespace DevTracker.Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("{projectId:guid}/archive")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException: the project does not exist or belongs to another user.")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectHasUnfinishedTasksException: all tasks must have status Done before archiving.")]
+        public async Task<IActionResult> ArchiveProject(Guid projectId, CancellationToken cancellationToken)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user is null) return Unauthorized();
+
+            await _projectService.ArchiveProjectAsync(projectId, user.Id, cancellationToken);
+            return NoContent();
+        }
+
         [HttpPatch("{projectId:guid}")]
         [ProducesResponseType(typeof(UpdatedProjectResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectAlreadyExistsException: this user already has another project with the given name.")]

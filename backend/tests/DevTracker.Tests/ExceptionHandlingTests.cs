@@ -17,6 +17,8 @@ public class ExceptionHandlingTests
     [InlineData("project", 404, "Project not found")]
     [InlineData("task", 404, "Task not found")]
     [InlineData("duplicate", 409, "Project already exists")]
+    [InlineData("unfinished", 409, "Cannot archive a project with unfinished tasks")]
+    [InlineData("archived", 409, "Cannot create or update tasks in an archived project")]
     [InlineData("unexpected", 500, "An unexpected error occurred")]
     [InlineData("update", 500, "An unexpected error occurred")]
     [InlineData("bad-request", 400, "Invalid request")]
@@ -77,6 +79,8 @@ public class ExceptionHandlingTests
         "project" => new ProjectDoNotExistsException(),
         "task" => new TaskDoNotExistsException(),
         "duplicate" => new ProjectAlreadyExistsException(),
+        "unfinished" => new ProjectHasUnfinishedTasksException(),
+        "archived" => new ProjectArchivedException(),
         "update" => new FailedToUpdateProjectException(),
         "bad-request" => new BadHttpRequestException("internal-secret"),
         "too-large" => new BadHttpRequestException("internal-secret", 413),

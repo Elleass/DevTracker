@@ -26,6 +26,7 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectArchivedException: cannot create tasks in an archived project.")]
         [ProducesResponseType(typeof(CreatedTaskItemResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "Invalid request body or empty task title.")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException: the project does not exist or belongs to another user.")]
@@ -95,6 +96,7 @@ namespace DevTracker.Api.Controllers
         }
 
         [HttpPatch("{taskItemId:guid}")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json", Description = "ProjectArchivedException: cannot update tasks in an archived project.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest, "application/problem+json", Description = "The request body is invalid.")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json", Description = "ProjectDoNotExistsException or TaskDoNotExistsException: the project is inaccessible or the task does not exist in this project.")]

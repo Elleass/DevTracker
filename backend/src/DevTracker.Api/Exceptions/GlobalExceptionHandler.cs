@@ -21,8 +21,10 @@ public sealed class GlobalExceptionHandler(
                 (StatusCodes.Status404NotFound, "Task not found"),
             ProjectAlreadyExistsException =>
                 (StatusCodes.Status409Conflict, "Project already exists"),
-
-
+            ProjectHasUnfinishedTasksException =>
+                (StatusCodes.Status409Conflict, "Cannot archive a project with unfinished tasks"),
+            ProjectArchivedException =>
+                (StatusCodes.Status409Conflict, "Cannot create or update tasks in an archived project"),
             BadHttpRequestException badRequest =>
                 (badRequest.StatusCode, "Invalid request"),
             _ =>
