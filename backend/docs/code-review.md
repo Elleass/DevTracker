@@ -1,5 +1,8 @@
 # Code review i weryfikacja wymagań
 
+> Dokument historyczny: ocena poprzedza realizację etapów 19–32.
+> Aktualny zakres i testy: [raport realizacji](../../docs/implementation-status.md).
+
 Stan na 2026-11-20, branch `project-mvp`. Ocena dotyczy 18 punktów przekazanych
 w rozmowie, aktualnego katalogu roboczego oraz wykonanych testów.
 

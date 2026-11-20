@@ -1,8 +1,9 @@
 # Plan realizacji etapów 19–32
 
-Status: **plan do wykonania**, 2026-11-20. Ten dokument nie oznacza wdrożenia
-nowych encji ani funkcji. Prace 01–18 i ich ograniczenia opisuje
-[bieżący code review](../backend/docs/code-review.md).
+Status: **zrealizowany**, 2026-11-20. Poniżej zachowano pierwotny plan i stan
+wyjściowy. Aktualną implementację, wyniki testów i różnice względem planu opisuje
+[raport realizacji](implementation-status.md). Prace 01–18 opisuje
+[wcześniejszy code review](../backend/docs/code-review.md).
 
 ## Punkt wyjścia i decyzje
 

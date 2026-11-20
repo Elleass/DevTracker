@@ -1,8 +1,8 @@
 # Plan frontendu — Vue 3 + shadcn-vue
 
-Status: **tylko plan**, 2026-11-20. Etapy 22–26 zależą od backendu opisanego
-w [planie 19–32](implementation-plan-19-32.md). Nie instalujemy w tym kroku
-nowej biblioteki ani nie zastępujemy obecnych komponentów.
+Status: **zrealizowany**, 2026-11-20. Ten dokument zachowuje pierwotny plan
+migracji. PrimeVue/Aura zastąpiono shadcn-vue, wdrożono backend i widoki 22–26.
+Aktualny zakres oraz wyniki testów zawiera [raport realizacji](implementation-status.md).
 
 ## Co już jest i co zachować
 
