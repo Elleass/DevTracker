@@ -1,5 +1,4 @@
 using DevTracker.Api.DTOs;
-using DevTracker.Application.Exceptions;
 using DevTracker.Application.Inerfaces;
 using DevTracker.Domain.Entities;
 using DevTracker.Infrastructure.Identity;
@@ -37,15 +36,8 @@ namespace DevTracker.Api.Controllers
                 return BadRequest("Task title cannot be empty.");
             }
 
-            try
-            {
-                Guid taskId = await _taskService.AddTaskItemAsync(projectId, user.Id, request.Title, request.Description, cancellationToken);
-                return StatusCode(StatusCodes.Status201Created, new { taskId });
-            }
-            catch (ProjectDoNotExistsException)
-            {
-                return NotFound();
-            }
+            Guid taskId = await _taskService.AddTaskItemAsync(projectId, user.Id, request.Title, request.Description, cancellationToken);
+            return StatusCode(StatusCodes.Status201Created, new { taskId });
         }
 
         [HttpGet]
@@ -57,16 +49,9 @@ namespace DevTracker.Api.Controllers
                 return Unauthorized();
             }
 
-            try
-            {
-                List<TaskItem> taskItems = await _taskService.GetTaskItemsAsync(projectId, user.Id, cancellationToken);
+            List<TaskItem> taskItems = await _taskService.GetTaskItemsAsync(projectId, user.Id, cancellationToken);
 
-                return Ok(taskItems);
-            }
-            catch (ProjectDoNotExistsException)
-            {
-                return NotFound();
-            }
+            return Ok(taskItems);
         }
 
         [HttpDelete("{taskItemId:guid}")]
@@ -77,20 +62,9 @@ namespace DevTracker.Api.Controllers
             {
                 return Unauthorized();
             }
-            try
-            {
-                await _taskService.DeleteTaskItemAsync(projectId, taskItemId, user.Id, cancellationToken);
+            await _taskService.DeleteTaskItemAsync(projectId, taskItemId, user.Id, cancellationToken);
 
-                return NoContent();
-            }
-            catch (ProjectDoNotExistsException)
-            {
-                return NotFound();
-            }
-            catch (TaskDoNotExistsException)
-            {
-                return NotFound();
-            }
+            return NoContent();
         }
 
         [HttpPatch("{taskItemId:guid}")]
@@ -101,19 +75,8 @@ namespace DevTracker.Api.Controllers
             {
                 return Unauthorized();
             }
-            try
-            {
-                await _taskService.UpdateTaskItemAsync(projectId, taskItemId, user.Id, request.Title, request.Description,request.Status, cancellationToken);
-                return Ok();
-            }
-            catch (ProjectDoNotExistsException)
-            {
-                return NotFound();
-            }
-            catch (TaskDoNotExistsException)
-            {
-                return NotFound();
-            }
+            await _taskService.UpdateTaskItemAsync(projectId, taskItemId, user.Id, request.Title, request.Description,request.Status, cancellationToken);
+            return Ok();
 
 
         }

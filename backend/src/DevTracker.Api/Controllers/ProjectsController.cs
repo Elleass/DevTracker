@@ -1,5 +1,4 @@
 using DevTracker.Api.DTOs;
-using DevTracker.Application.Exceptions;
 using DevTracker.Application.Services;
 using DevTracker.Domain.Entities;
 using DevTracker.Infrastructure.Identity;
@@ -8,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevTracker.Api.Controllers
-{    
+{
     [ApiController]
     [Authorize]
     [Route("api/projects")]
@@ -31,21 +30,14 @@ namespace DevTracker.Api.Controllers
             {
                 return Unauthorized();
             }
-            try
-            {
-                Guid projectId = await _projectService.CreateProjectAsync(
-                    user.Id, 
-                    request.Name,
-                    request.Description, 
-                    cancellationToken);
+            Guid projectId = await _projectService.CreateProjectAsync(
+                user.Id,
+                request.Name,
+                request.Description,
+                cancellationToken);
 
-                return StatusCode(StatusCodes.Status201Created, new {projectId});
+            return StatusCode(StatusCodes.Status201Created, new {projectId});
 
-            }
-            catch (ProjectAlreadyExistsException ex)
-            {
-                return Conflict( new {message = ex.Message});
-            }            
         }
 
 
@@ -62,7 +54,7 @@ namespace DevTracker.Api.Controllers
             {
                 projects
             });
-        } 
+        }
 
 
         [HttpGet("{projectId:guid}")]
@@ -73,18 +65,11 @@ namespace DevTracker.Api.Controllers
             {
                 return Unauthorized();
             }
-            try
+            Project project = await  _projectService.GetProjectAsync(projectId, user.Id, cancellationToken);
+            return StatusCode(StatusCodes.Status200OK, new
             {
-                Project project = await  _projectService.GetProjectAsync(projectId, user.Id, cancellationToken);
-                return StatusCode(StatusCodes.Status200OK, new
-                {
-                    project
-                });
-            }
-            catch(ProjectDoNotExistsException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+                project
+            });
         }
 
         [HttpDelete("{projectId:guid}")]
@@ -95,15 +80,8 @@ namespace DevTracker.Api.Controllers
             {
                 return Unauthorized();
             }
-            try
-            {
-                await  _projectService.DeleteProjectAsync(projectId, user.Id, cancellationToken);
-                return NoContent();
-            }
-            catch(ProjectDoNotExistsException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            await  _projectService.DeleteProjectAsync(projectId, user.Id, cancellationToken);
+            return NoContent();
         }
 
         [HttpPatch("{projectId:guid}")]
@@ -114,27 +92,19 @@ namespace DevTracker.Api.Controllers
             {
                 return Unauthorized();
             }
-            try
-            {
-                 await _projectService.UpdateProjectAsync(
-                    projectId,
-                    user.Id, 
-                    request.Name,
-                    request.Description, 
-                    cancellationToken);
+             await _projectService.UpdateProjectAsync(
+                projectId,
+                user.Id,
+                request.Name,
+                request.Description,
+                cancellationToken);
 
-                return Ok(new {projectId, request.Name, request.Description});
+            return Ok(new {projectId, request.Name, request.Description});
 
-            }
-            catch (ProjectDoNotExistsException ex)
-            {
-                return NotFound(new { message = ex.Message });
-
-            }  
         }
 
 
-        
-        
+
+
     }
 }

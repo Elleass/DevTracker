@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevTracker.Api.Controllers
-{        
-    
-    
+{
+
+
     [ApiController]
     [Route("api/auth")]
     public class AuthController : ControllerBase
@@ -29,7 +29,7 @@ namespace DevTracker.Api.Controllers
                 Email = request.Email,
                 Nickname = request.Nickname,
                 UserName = request.Email
-                
+
             };
             var result = await _userManager.CreateAsync(appUser, request.Password);
             if (result.Succeeded == false)
