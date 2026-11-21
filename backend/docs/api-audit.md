@@ -80,36 +80,9 @@ datę ISO 8601 z offsetem i jest zapisywane w UTC; może być null.
 
 ## Model PostgreSQL
 
-```mermaid
-erDiagram
-    AspNetUsers ||--o{ Projects : OwnerId
-    Projects ||--o{ TaskItem : ProjectId
-    AspNetUsers {
-        uuid Id PK
-        string Email
-        string Nickname
-    }
-    Projects {
-        uuid Id PK
-        uuid OwnerId FK
-        varchar150 Name
-        text Description
-        text Status
-        timestamptz ArchivedAt
-        timestamptz CreatedAt
-        timestamptz UpdatedAt
-    }
-    TaskItem {
-        uuid Id PK
-        uuid ProjectId FK
-        varchar150 Title
-        text Description
-        text Status
-        timestamptz DueAt
-        timestamptz CreatedAt
-        timestamptz UpdatedAt
-    }
-```
+> Pełny, aktualny schemat fizyczny (tabele biznesowe, Identity i historia migracji)
+> znajduje się w [kanonicznym ERD](../../docs/technical.md#erd--pełny-schemat-fizyczny-postgresql).
+> Poniższy audyt opisuje historyczny stan punktów 01–04.
 
 `ApplicationUser` dziedziczy po `IdentityUser<Guid>`. Pozostałe tabele Identity
 obsługują m.in. role, loginy, tokeny i claims; nie są dodatkowymi encjami domeny
