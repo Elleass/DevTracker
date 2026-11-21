@@ -87,10 +87,10 @@ Nie dodawaj `-v`, jeśli chcesz zachować bazę. Nie zapisuj `.env` ani haseł w
 
 - [Pełny ERD, relacje, architektura i reguły biznesowe](docs/technical.md)
 - [Konfiguracja, uruchamianie lokalne i polecenia testów](docs/development.md)
-- [Zrealizowane wymagania i wyniki testów](docs/implementation-status.md)
+- [Realizacja wymagań na 3.0, 4.0 i 5.0](docs/implementation-status.md)
 - [GitHub Actions — build i testy](https://github.com/Elleass/DevTracker/actions)
 
 Ostatnia pełna regresja: **70 testów backendu, 6 frontendu i 6 E2E**.
 ERD obejmuje tabele aplikacji, ASP.NET Identity i historię migracji.
 Historia zmian: `git log --oneline`. Przy oddaniu wskaż końcowy commit lub tag
-oraz dołącz nagrane demo — powyższy scenariusz nie jest filmem.
+oraz dołącz nagrane demo (3–5 minut).
