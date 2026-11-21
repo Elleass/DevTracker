@@ -89,7 +89,6 @@ Nie dodawaj `-v`, jeśli chcesz zachować bazę. Nie zapisuj `.env` ani haseł w
 - [Konfiguracja, uruchamianie lokalne i polecenia testów](docs/development.md)
 - [Zrealizowane wymagania i wyniki testów](docs/implementation-status.md)
 - [GitHub Actions — build i testy](https://github.com/Elleass/DevTracker/actions)
-- [Scenariusz demonstracji 3–5 minut](docs/demo.md)
 
 Ostatnia pełna regresja: **70 testów backendu, 6 frontendu i 6 E2E**.
 ERD obejmuje tabele aplikacji, ASP.NET Identity i historię migracji.
