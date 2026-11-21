@@ -1,160 +1,81 @@
 # DevTracker
 
-Aplikacja do zarządzania projektami programistycznymi: zadania i ich zależności,
-dokumentacja Markdown oraz pomiar czasu pracy. Vue 3 komunikuje się z REST API
-ASP.NET Core przez cookies Identity. Dane są przechowywane w PostgreSQL.
+Aplikacja do rozwijania projektów hobbystycznych: planowania zadań,
+prowadzenia dokumentacji i mierzenia czasu pracy. Interfejs jest po angielsku.
 
-## Funkcje
+## Co potrafi
 
-- Rejestracja, logowanie, logout, sesje 30 minut, role USER/ADMIN.
-- Projects CRUD i archiwizacja; Tasks CRUD, estymacja czasu, priorytet, paginacja i filtry.
-- Interfejs w języku angielskim, filtrowanie projektów po statusie i nazwie.
-- Graf poprzedników: zakaz cykli i zakończenia zadania przed poprzednikami.
-- Dokumenty projektu: CRUD, Markdown z podglądem sanitizowanym przez DOMPurify.
-- Jedna aktywna sesja pracy na użytkownika; start/stop/historia i timer w UI.
-- Statystyki czasu pracy przeliczane w tle przez BackgroundService/Channel.
-- Izolacja danych użytkowników, walidacja DTO i ProblemDetails w API.
-- Ochrona loginu: 5 błędów → 15 minut blokady konta; limit 10 żądań/min/IP.
+- **Projekty:** tworzenie, edycja, usuwanie, archiwizacja i filtry statusów.
+- **Zadania:** CRUD, priorytety, estymacja czasu, zależności, wyszukiwanie i paginacja.
+- **Dokumentacja:** dokumenty Markdown z bezpiecznym podglądem.
+- **Czas pracy:** start/stop sesji, licznik, historia i statystyki przeliczane w tle.
+- **Konta:** rejestracja, logowanie, wylogowanie, role USER/ADMIN i prywatne dane.
+
+Trzy reguły biznesowe: jedna aktywna sesja użytkownika, archiwizacja dopiero po
+ukończeniu zadań i ukończenie zadania dopiero po jego wymaganych poprzednikach.
 
 ## Technologie i architektura
 
-.NET SDK/ASP.NET Core 10, EF Core 10/Npgsql, PostgreSQL 18; Vue 3, JavaScript,
-Vite 8, Tailwind 4, shadcn-vue/Reka UI. Testy: xUnit/WebApplicationFactory,
-Vitest/Vue Test Utils i Playwright. PrimeVue został usunięty.
+| Część | Technologie |
+| --- | --- |
+| Frontend | Vue 3, JavaScript, Vite, Tailwind CSS, shadcn-vue |
+| Backend | ASP.NET Core 10, EF Core, ASP.NET Core Identity |
+| Baza | PostgreSQL 18 |
+| Testy i uruchomienie | xUnit, Vitest, Playwright, GitHub Actions, Docker Compose |
 
-```text
-backend/src/DevTracker.Domain          encje i statusy
-backend/src/DevTracker.Application     reguły, serwisy, interfejsy, DTO odpowiedzi
-backend/src/DevTracker.Infrastructure  PostgreSQL, repozytoria, Identity, worker
-backend/src/DevTracker.Api             HTTP, DTO wejściowe, auth, OpenAPI
-backend/tests/DevTracker.Tests         unit/integration/concurrency tests
-frontend/src                          widoki Vue, API client i shadcn-vue
-docs/technical.md                     ERD, kontrakty, reguły, mechanizm asynchroniczny
+```mermaid
+flowchart LR
+    UI["Vue 3 + shadcn-vue"] <-->|HTTP / JSON| API["ASP.NET Core 10"]
+    API <-->|EF Core| DB[(PostgreSQL 18)]
 ```
 
-Application zależy od Domain; Infrastructure implementuje interfejsy Application.
-Api rejestruje zależności i wystawia HTTP. Reguły nie znajdują się w kontrolerach.
+Backend: **Api** obsługuje HTTP, **Application** reguły biznesowe, **Domain** encje,
+a **Infrastructure** bazę, Identity i przetwarzanie w tle.
 
-## Szybkie uruchomienie — Docker Compose
+## Uruchomienie
 
-Wymagany Docker Desktop/Engine z Compose. Z katalogu głównego:
+Wymagane: Git oraz uruchomiony Docker z Docker Compose.
+Polecenia dla PowerShell:
 
 ```powershell
-Copy-Item .env.example .env
-# Ustaw POSTGRES_PASSWORD w .env na własne hasło.
-docker compose up --build -d
-docker compose ps
+git clone https://github.com/Elleass/DevTracker.git
+cd DevTracker
+git switch project-mvp
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-- Aplikacja: [localhost:8088](http://localhost:8088)
-- Swagger UI: [localhost:5033/swagger](http://localhost:5033/swagger)
-- OpenAPI: [localhost:5033/openapi/v1.json](http://localhost:5033/openapi/v1.json)
-
-Najpierw startuje zdrowa baza, potem jednorazowy kontener `migrate` stosuje
-migracje; dopiero po sukcesie uruchamiają się API i frontend. Zakończony migrator
-z kodem 0 jest prawidłowym stanem. API działa jako użytkownik `app`.
-
-Compose jest **lokalnym profilem Development**, z portami dostępnymi wyłącznie
-na 127.0.0.1. Produkcyjne wystawienie wymaga HTTPS, konfiguracji zaufanego proxy,
-sekretów i zaszyfrowania kluczy Data Protection. W tym profilu nie ma publicznego
-hostingu ani certyfikatów produkcyjnych.
-
-Wolumen `postgres_data` zachowuje dane, `data_protection` zachowuje klucze cookies.
-Jeśli używasz istniejącego wolumenu, podaj jego dotychczasowe hasło: zmiana `.env`
-nie zmienia hasła istniejącego PostgreSQL. Nie używaj `down -v` do zwykłego restartu.
+Ustaw własne `POSTGRES_PASSWORD` w `.env`, a następnie:
 
 ```powershell
-docker compose restart api frontend
-docker compose logs --tail 100 api migrate
-docker compose down
+docker compose up -d --build
 ```
 
-## Lokalne uruchomienie bez kontenerów aplikacji
+Jeśli masz już `.env`, zachowaj go. Przy istniejącej bazie użyj jej dotychczasowego
+hasła. Dane pozostają w wolumenie; migracje wykonują się automatycznie.
+Kontener `migrate` powinien zakończyć się kodem 0.
 
-Wymagania: .NET SDK 10, Node 24.12+ (lub zgodny z frontend/package.json), npm,
-PostgreSQL 18, narzędzie `dotnet-ef` w wersji 10.0.13.
+| Usługa | Adres |
+| --- | --- |
+| Aplikacja | [localhost:8088](http://localhost:8088) |
+| Swagger UI | [localhost:5033/swagger](http://localhost:5033/swagger) |
+| OpenAPI | [localhost:5033/openapi/v1.json](http://localhost:5033/openapi/v1.json) |
 
-```powershell
-docker compose up -d db
-$env:ConnectionStrings__DefaultConnection = 'Host=localhost;Database=devtracker;Username=postgres;Password=<lokalne-haslo>'
-$env:ASPNETCORE_ENVIRONMENT = 'Development'
-dotnet run --project backend/src/DevTracker.Api -- --migrate=true
-dotnet run --project backend/src/DevTracker.Api --launch-profile http
-```
+Zarejestruj konto w aplikacji — otrzyma rolę USER. Nadanie ADMIN oraz start bez
+kontenerów opisuje [instrukcja deweloperska](docs/development.md).
+Konfiguracja Docker służy do uruchomienia lokalnego w środowisku Development.
 
-W drugim terminalu:
+Zatrzymanie aplikacji z zachowaniem danych: `docker compose down`.
+Nie dodawaj `-v`, jeśli chcesz zachować bazę. Nie zapisuj `.env` ani haseł w Git.
 
-```powershell
-cd frontend
-npm ci
-npm run dev
-```
+## Dokumentacja i weryfikacja
 
-Frontend Vite podaje adres lokalny i przekazuje `/api` do portu 5033. Nie uruchamiaj
-lokalnego API i kontenerowego API jednocześnie na tym samym porcie.
+- [Pełny ERD, relacje, architektura i reguły biznesowe](docs/technical.md)
+- [Konfiguracja, uruchamianie lokalne i polecenia testów](docs/development.md)
+- [Zrealizowane wymagania i wyniki testów](docs/implementation-status.md)
+- [GitHub Actions — build i testy](https://github.com/Elleass/DevTracker/actions)
+- [Scenariusz demonstracji 3–5 minut](docs/demo.md)
 
-## Konfiguracja i role
-
-Connection string podaj przez `ConnectionStrings__DefaultConnection` lub
-ignorowany `backend/src/DevTracker.Api/appsettings.Development.json`. Nie commituj
-`.env`, haseł ani kluczy. `.env.example` zawiera wyłącznie wzór konfiguracji.
-
-Rejestracja przydziela USER. ADMIN przyznaje się istniejącemu kontu lokalnie:
-
-```powershell
-dotnet run --project backend/src/DevTracker.Api -- --grant-admin email@example.com
-# Albo dla Compose:
-docker compose exec api dotnet DevTracker.Api.dll --grant-admin email@example.com
-```
-
-Po nadaniu roli zaloguj się ponownie. ADMIN ma `/api/admin/users`, ale nie omija
-kontroli właściciela projektów. Hasła kont nie są ustalane przez seeder.
-Sesja jest cookie HttpOnly/SameSite=Lax; poza Development także Secure.
-
-Opcje środowiskowe: `Authentication__Session__LifetimeMinutes` (1–1440),
-`Authentication__LoginProtection__MaxFailedAttempts`, `LockoutMinutes`,
-`PermitLimit`, `WindowSeconds`; `BackgroundProcessing__Enabled=false` wyłącza
-worker, `DataProtection__KeysPath` określa katalog kluczy dla kontenerów.
-Limit IP jest lokalny dla procesu; wiele replik wymaga wspólnego limitowania
-na brzegu infrastruktury. Nagłówki forwarding nie są automatycznie zaufane.
-
-## Build i testy
-
-```powershell
-dotnet build backend/DevTracker.slnx
-$env:DEVTRACKER_TEST_CONNECTION = 'Host=localhost;Database=postgres;Username=postgres;Password=<testowe-haslo>'
-dotnet test backend/DevTracker.slnx
-cd frontend
-npm ci
-npm test
-npm run build
-```
-
-Testy backendu potrzebują uprawnień CREATE DATABASE: tworzą i usuwają wyłącznie
-losowe `devtracker_tests_*`. Bez zmiennej połączenia integracyjne testy PostgreSQL
-są pomijane; nie traktuj takiego wyniku jako pełnej weryfikacji.
-
-Testy przeglądarkowe uruchamiają własne API/Vite. Przygotuj **oddzielną pustą
-bazę** E2E, nigdy bazę użytkowników/produkcji, i zwolnij porty 5034/5174
-(można nadpisać przez E2E_API_PORT/E2E_UI_PORT):
-
-```powershell
-cd frontend
-npx playwright install chromium
-$env:E2E_CONNECTION = 'Host=localhost;Database=devtracker_e2e;Username=postgres;Password=<testowe-haslo>'
-npm run test:e2e
-```
-
-Migracje E2E stosowane są automatycznie. Scenariusze tworzą własne konta i dane
-w tej testowej bazie; bazę można potem usunąć. Raport: frontend/playwright-report.
-GitHub Actions uruchamia build/test backendu z PostgreSQL, testy/build frontendu
-oraz E2E; raporty testów są artefaktami workflow. Hasło `ci-only-password` dotyczy
-wyłącznie jednorazowej bazy service joba i nie jest sekretem środowiska aplikacji.
-
-## Dokumentacja
-
-- [Architektura, ERD, reguły i API](docs/technical.md)
-- [Scenariusz demonstracji](docs/demo.md)
-- [Wyniki etapów 19–32](docs/implementation-status.md)
-- [Pierwotny plan](docs/implementation-plan-19-32.md) i [plan UI](docs/frontend-plan.md)
-- Historia: `git log --oneline`; aktualna gałąź robocza: `project-mvp`.
+Ostatnia pełna regresja: **70 testów backendu, 6 frontendu i 6 E2E**.
+ERD obejmuje tabele aplikacji, ASP.NET Identity i historię migracji.
+Historia zmian: `git log --oneline`. Przy oddaniu wskaż końcowy commit lub tag
+oraz dołącz nagrane demo — powyższy scenariusz nie jest filmem.
