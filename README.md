@@ -29,8 +29,24 @@ flowchart LR
     API <-->|EF Core| DB[(PostgreSQL 18)]
 ```
 
-Backend: **Api** obsługuje HTTP, **Application** reguły biznesowe, **Domain** encje,
-a **Infrastructure** bazę, Identity i przetwarzanie w tle.
+## Struktura projektu
+
+```text
+DevTracker/
+├── backend/
+│   ├── src/
+│   │   ├── DevTracker.Api/             # HTTP, kontrolery i DTO
+│   │   ├── DevTracker.Application/     # Serwisy i reguły biznesowe
+│   │   ├── DevTracker.Domain/          # Encje i statusy
+│   │   └── DevTracker.Infrastructure/  # EF Core, migracje, Identity i worker
+│   └── tests/DevTracker.Tests/         # Testy jednostkowe i integracyjne
+├── frontend/
+│   ├── src/                           # Widoki, komponenty i klient API
+│   └── e2e/                           # Testy przeglądarkowe Playwright
+├── docs/                              # ERD i dokumentacja techniczna
+├── .github/workflows/                 # GitHub Actions
+└── compose.yaml                       # Uruchomienie aplikacji i bazy
+```
 
 ## Uruchomienie
 
